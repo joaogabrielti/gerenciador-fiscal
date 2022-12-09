@@ -1,5 +1,12 @@
-import TestComponent from './TestComponent'
+import App from './App'
+import SearchForm from './SearchForm'
+
+import empresas from '@/utils/empresas'
 
 export default function Page() {
-  return <TestComponent />
+  return (
+    <App>
+      <SearchForm empresas={empresas} />
+    </App>
+  )
 }
