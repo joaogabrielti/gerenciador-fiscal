@@ -6,11 +6,9 @@ export type Empresa = {
 
 const empresas: Empresa[] = []
 
-process.env.VITE_EMPRESAS?.split(';').forEach(empresa => {
+process.env.NEXT_PUBLIC_EMPRESAS?.split(';').forEach(empresa => {
   const [value, label, dir] = empresa.split(',')
   empresas.push({ value, label, dir })
 })
-
-console.log(empresas)
 
 export default empresas

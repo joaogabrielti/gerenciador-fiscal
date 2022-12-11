@@ -1,10 +1,10 @@
 "use client"
 
-import { Dayjs } from 'dayjs'
-import { useState } from 'react'
+import dayjs, { Dayjs } from 'dayjs'
+import { useState, useCallback } from 'react'
 
 import Grid from '@mui/material/Unstable_Grid2'
-import { Button, Container, Paper, TextField } from '@mui/material'
+import { Button, CircularProgress, Container, Paper, TextField, Typography } from '@mui/material'
 import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import { DatePicker } from '@mui/x-date-pickers'
 
@@ -12,18 +12,62 @@ import type { Empresa } from '@/utils/empresas'
 
 type SearchFormProps = {
   empresas: Empresa[]
+  setRows: React.Dispatch<React.SetStateAction<any[]>>
 }
 
-export default function SearchForm({ empresas }: SearchFormProps) {
+export default function SearchForm({ empresas, setRows }: SearchFormProps) {
   const [empresa, setEmpresa] = useState(empresas[0])
   const [emitente, setEmitente] = useState('')
   const [cnpjEmitente, setCnpjEmitente] = useState('')
-  const [dataInicial, setDataInicial] = useState<Dayjs|null>()
-  const [dataFinal, setDataFinal] = useState<Dayjs|null>()
+  const [dataInicial, setDataInicial] = useState<Dayjs|null>(dayjs())
+  const [dataFinal, setDataFinal] = useState<Dayjs|null>(dayjs())
+
+  const [message, setMessage] = useState('Clique em buscar notas para começar!')
+  const [loading, setLoading] = useState(false)
+
+  const handleSearch = useCallback(async () => {
+    setMessage('Buscando notas...')
+    setLoading(true)
+    setRows([])
+
+    const body = {
+      empresa: empresa.value,
+      emitente,
+      cnpjEmitente,
+      dataInicial: dataInicial?.format('YYYY-MM-DD'),
+      dataFinal: dataFinal?.format('YYYY-MM-DD'),
+    }
+
+    const response = await fetch('/api/search', {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    })
+
+    setLoading(false)
+
+    if (!response.ok) {
+      setMessage('Erro ao buscar notas!')
+      return
+    }
+
+    const data = await response.json()
+
+    setMessage(`${data.length} nota(s) encontrada(s)!`)
+
+    setRows(
+      data.sort(
+        (a: any, b: any) => dayjs(b.dataHoraEmissao).diff(dayjs(a.dataHoraEmissao))
+      )
+    )
+  }, [empresa, emitente, cnpjEmitente, dataInicial, dataFinal, setRows])
 
   return (
     <Container maxWidth="xl">
-      <Paper sx={{ padding: 2 }}>
+      <Paper variant="outlined" sx={{ padding: 2 }}>
         <Grid container spacing={2}>
           <Grid xs={12} sm={3} md={2}>
             <FormControl size="small" fullWidth>
@@ -34,7 +78,7 @@ export default function SearchForm({ empresas }: SearchFormProps) {
             </FormControl>
           </Grid>
 
-          <Grid xs={6} sm={5} md={3} lg={3} xl={2}>
+          <Grid xs={6} sm={5} md={3} lg={3}>
             <TextField
               size="small"
               label="Emitente"
@@ -44,7 +88,7 @@ export default function SearchForm({ empresas }: SearchFormProps) {
             />
           </Grid>
 
-          <Grid xs={6} sm={4} md={3} lg={3} xl={2}>
+          <Grid xs={6} sm={4} md={3} lg={3}>
             <TextField
               size="small"
               label="CNPJ do Emitente"
@@ -72,8 +116,13 @@ export default function SearchForm({ empresas }: SearchFormProps) {
             />
           </Grid>
 
-          <Grid xs={6} xsOffset={6} sm={3} smOffset={9} md={2} mdOffset={10}>
-            <Button size="small" variant="contained" fullWidth>Buscar Notas</Button>
+          <Grid xs={12} sm={9} md={10} sx={{ display: 'flex', alignItems: 'flex-end' }}>
+            {loading && <CircularProgress size={20} sx={{ marginRight: 1 }} />}
+            <Typography variant="caption">{message}</Typography>
+          </Grid>
+
+          <Grid xs={12} sm={3} md={2}>
+            <Button size="small" variant="contained" onClick={handleSearch} fullWidth>Buscar Notas</Button>
           </Grid>
         </Grid>
       </Paper>
