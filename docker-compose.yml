@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  gerenciador-fiscal:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: webapp
+    restart: unless-stopped
+    ports:
+      - "5100:3000"
+    networks:
+      - default
+    volumes:
+      - /root/compartilhamentos/192.168.0.11/NFe/:/nfe
+
+networks:
+  default:
+    driver: bridge
