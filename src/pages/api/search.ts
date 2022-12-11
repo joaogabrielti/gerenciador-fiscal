@@ -8,6 +8,7 @@ import { XMLParser } from 'fast-xml-parser'
 
 type ResponseData = {
   id: string
+  empresaId: string
   empresa: string
   emitente: string
   cnpjEmitente: string
@@ -39,6 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
 
     arr.push({
       id: file,
+      empresaId: empresaSelecionada.value,
       empresa: empresaSelecionada.label,
       emitente: (obj.nfeProc.NFe.infNFe.emit.xNome as string).toUpperCase(),
       cnpjEmitente: obj.nfeProc.NFe.infNFe.emit.CNPJ,

@@ -2,8 +2,8 @@
 
 import dayjs from 'dayjs'
 
-import { Container } from '@mui/material'
-import { DataGrid, GridColDef, GridValueGetterParams } from '@mui/x-data-grid'
+import { Container, Stack, Button } from '@mui/material'
+import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
 type DataTableProps = {
   rows: any[]
@@ -44,7 +44,7 @@ const columns: GridColDef[] = [
     sortable: false,
     filterable: false,
     width: 200,
-    valueGetter: (params: GridValueGetterParams) => dayjs(params.row.dataHoraEmissao).format('DD/MM/YYYY HH:mm:ss'),
+    valueGetter: params => dayjs(params.row.dataHoraEmissao).format('DD/MM/YYYY HH:mm:ss'),
   },
   {
     field: 'valor',
@@ -52,7 +52,24 @@ const columns: GridColDef[] = [
     sortable: false,
     filterable: false,
     width: 150,
-    valueGetter: (params: GridValueGetterParams) => Number(params.row.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+    valueGetter: params => Number(params.row.valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+  },
+  {
+    field: 'id',
+    headerName: 'Download',
+    sortable: false,
+    filterable: false,
+    width: 200,
+    renderCell: params => (
+      <Stack direction="row" spacing={1}>
+        <Button variant="contained" color="success" size="small" href={`/api/download-xml?empresa=${params.row.empresaId}&id=${params.row.id}`} target="_blank">
+          XML
+        </Button>
+        <Button variant="contained" color="error" size="small" href={`/api/download-pdf?empresa=${params.row.empresaId}&id=${params.row.id}`} target="_blank">
+          PDF
+        </Button>
+      </Stack>
+    ),
   },
 ]
 
